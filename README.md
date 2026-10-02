@@ -2,6 +2,8 @@
 
 <p align="center"><strong>Resume-to-Score pipeline</strong> that extracts structured data from PDFs, enriches with GitHub signals, and outputs a fair, explainable evaluation.</p>
 
+<p align="center"><a href="https://hiring-agent.dhirenderchoudhary.com">hiring-agent.dhirenderchoudhary.com</a></p>
+
 <p align="center">
   <a href="https://www.python.org/downloads/release/python-3110/">
     <img alt="Python" src="https://img.shields.io/badge/python-3.11%2B-blue.svg">
@@ -79,6 +81,7 @@ Articles and discussions that have shaped how we think about improving this proj
 **Community tools built on this repo**
 
 - [Resume Reality Check](https://resume-reality-check-seven.vercel.app/) — hosted tool that lets candidates score their own resume against the same rubric
+- [hiring-agent.dhirenderchoudhary.com](https://hiring-agent.dhirenderchoudhary.com) — drop a PDF for a score, or paste a job description and see how well the resume matches
 
 ---
 
