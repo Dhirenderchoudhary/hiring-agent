@@ -87,6 +87,7 @@ h1 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
 .prod i { background: var(--prod); }
 .skill i { background: var(--skill); }
 .evidence { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 13px; }
+.evidence a { color: var(--os); }
 
 .note { margin: 12px 0 0; font-size: 13px; color: var(--muted); }
 .note strong { color: var(--prod); font-weight: 600; }
