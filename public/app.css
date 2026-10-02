@@ -32,11 +32,12 @@ button, input { font: inherit; }
 h1 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
 .quiet { margin: 0 0 16px; color: var(--muted); }
 
+.step { margin: 0 0 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
 .drop {
   background: #fff;
-  border: 1px dashed #d0d0d0;
+  border: 1.5px dashed #b9b9b9;
   border-radius: 8px;
-  padding: 22px 16px 14px;
+  padding: 28px 16px;
 }
 .drop.hot { border-color: #111; }
 .drop label { display: block; position: relative; text-align: center; cursor: pointer; }
@@ -55,6 +56,45 @@ h1 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
   cursor: pointer;
 }
 .run:disabled { background: #e8e8e8; color: #8a8a8a; cursor: not-allowed; }
+a.alt {
+  display: inline-block;
+  margin-top: 12px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 14px;
+  border: 1px solid #111;
+  border-radius: 6px;
+  background: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+.field {
+  display: block;
+  margin: 18px 0 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.job {
+  display: block;
+  width: 100%;
+  min-height: 160px;
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid #e4e4e4;
+  border-radius: 8px;
+  background: #fafafa;
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.45;
+  resize: vertical;
+  outline: none;
+  box-shadow: none;
+}
+.job::placeholder { color: #9a9a9a; }
+.job:focus { border-color: #111; background: #fff; }
 
 .scale { margin: 14px 0 0; color: var(--muted); font-size: 13px; }
 .scale b { color: var(--ink); font-weight: 600; }

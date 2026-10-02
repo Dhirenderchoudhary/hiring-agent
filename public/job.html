@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hiring Agent</title>
+  <title>Job match · Hiring Agent</title>
   <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" />
   <link rel="icon" href="/favicon-32.png?v=3" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=3" />
   <meta property="og:title" content="Hiring Agent" />
   <meta property="og:description" content="Score a resume, or match it to a job description. Built on HackerRank’s open-source hiring agent." />
   <meta property="og:image" content="https://hiring-agent-seven.vercel.app/og.png" />
-  <meta property="og:url" content="https://hiring-agent-seven.vercel.app/" />
+  <meta property="og:url" content="https://hiring-agent-seven.vercel.app/job" />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://hiring-agent-seven.vercel.app/og.png" />
@@ -21,62 +21,48 @@
     <header class="top">
       <a class="word" href="/">Hiring Agent</a>
       <nav class="tabs">
-        <a href="/" aria-current="page">Score</a>
-        <a href="/job">Job</a>
+        <a href="/">Score</a>
+        <a href="/job" aria-current="page">Job</a>
         <a href="/example">Example</a>
         <a href="/algorithm">Algorithm</a>
         <a href="/faq">FAQ</a>
       </nav>
     </header>
 
-    <p class="built">
-      <svg class="oss" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" />
-      </svg>
-      Built on <a href="https://github.com/interviewstreet/hiring-agent">HackerRank’s open-source hiring agent</a>
-    </p>
-    <h1>Score a resume</h1>
-    <p class="quiet">Drop a PDF, then press Run analysis. The file is not stored. It is deleted after scoring.</p>
+    <h1>Match a job description</h1>
+    <p class="quiet">Upload a PDF and paste the job. The score is how well that resume fits this post, not the intern rubric. The file is deleted after scoring.</p>
 
+    <p class="step">1 · Resume</p>
     <div class="drop" id="drop">
       <label>
         <input id="file" type="file" accept="application/pdf,.pdf" />
-        <svg class="doc" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
-        <strong id="dropTitle">Drop a PDF here</strong>
-        <span id="dropHint">or choose a file · 8 MB max</span>
+        <strong id="dropTitle">Drop the resume PDF in this box</strong>
+        <span id="dropHint">or click here to choose a file · 8 MB max</span>
       </label>
-      <button class="run" id="run" type="button" disabled>Run analysis</button>
     </div>
-    <a class="alt" href="/job">Match a job description</a>
-    <ul class="marks">
-      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="12" r="2"/><path d="M8 6h6a4 4 0 0 1 0 8H8"/></svg><b>35</b> open source</li>
-      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16v12H4zM8 7V5h8v2"/></svg><b>30</b> self projects</li>
-      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="7" width="18" height="12" rx="1"/><path d="M8 7V6h8v1M3 12h18"/></svg><b>25</b> production</li>
-      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14"/></svg><b>10</b> skills</li>
-    </ul>
-    <p class="scale">Bonus can add 20. Name, college, grades, and city do not count.</p>
+    <label class="field" for="job">2 · Job description</label>
+    <textarea class="job" id="job" placeholder="Paste the role, the stack, and what the job asks for."></textarea>
+    <button class="run" id="run" type="button" disabled>Score against this job</button>
 
     <div class="status" id="status" aria-live="polite">
       <div class="barline"><i></i></div>
-      Scoring this resume. Usually under two minutes.
+      Reading the resume, then comparing it to the job. Usually under two minutes.
     </div>
     <div class="error" id="error" role="alert"></div>
     <div id="yours" hidden></div>
 
-    <footer>Not affiliated with HackerRank. <a href="https://github.com/interviewstreet/hiring-agent">Source</a> · <a href="/example">Example</a> · <a href="/faq">FAQ</a></footer>
   </div>
   <script>
     const fileInput = document.getElementById("file");
     const drop = document.getElementById("drop");
     const dropTitle = document.getElementById("dropTitle");
     const dropHint = document.getElementById("dropHint");
+    const jobInput = document.getElementById("job");
     const runBtn = document.getElementById("run");
     const statusEl = document.getElementById("status");
     const errorEl = document.getElementById("error");
     const yours = document.getElementById("yours");
     let chosen = null;
-    let role = "software_engineering_intern";
     let busy = false;
 
     function fmt(n) {
@@ -90,44 +76,18 @@
     function isPdf(file) {
       return file && (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf"));
     }
+    function refresh() {
+      runBtn.disabled = busy || !chosen || jobInput.value.trim().length < 40;
+    }
     function choose(file) {
       if (!file || busy) return;
       if (!isPdf(file)) { setError("Choose a PDF resume."); return; }
       if (file.size > 8 * 1024 * 1024) { setError("Upload a PDF under 8 MB."); return; }
       chosen = file;
       dropTitle.textContent = file.name;
-      dropHint.textContent = "Ready. Press Run analysis.";
-      runBtn.disabled = false;
+      dropHint.textContent = "Add the job description, then score.";
       setError("");
-    }
-    function tone(key) {
-      if (key === "self_projects") return "proj";
-      if (key === "production") return "prod";
-      if (key === "technical_skills") return "skill";
-      return "os";
-    }
-    function row(category) {
-      const line = document.createElement("div");
-      line.className = "row";
-      const name = document.createElement("span");
-      name.textContent = category.label;
-      const track = document.createElement("div");
-      track.className = "track " + tone(category.key);
-      const fill = document.createElement("i");
-      const max = Number(category.max) || 0;
-      fill.style.width = (max ? Math.max(0, Math.min(100, (category.score / max) * 100)) : 0) + "%";
-      track.appendChild(fill);
-      const pts = document.createElement("span");
-      pts.className = "n";
-      pts.textContent = fmt(category.score) + " / " + category.max;
-      line.append(name, track, pts);
-      if (category.evidence) {
-        const evidence = document.createElement("p");
-        evidence.className = "evidence";
-        evidence.textContent = category.evidence;
-        line.appendChild(evidence);
-      }
-      return line;
+      refresh();
     }
     function list(title, items) {
       const block = document.createElement("div");
@@ -155,29 +115,21 @@
       const big = document.createElement("b");
       big.textContent = fmt(data.score);
       const small = document.createElement("span");
-      small.textContent = " / " + data.out_of;
+      small.textContent = " / 100";
       total.append(big, small);
       head.append(name, total);
-      const rows = document.createElement("div");
-      rows.className = "rows";
-      for (const category of data.categories || []) rows.appendChild(row(category));
-      const note = document.createElement("p");
-      note.className = "note";
-      const plus = data.bonus && data.bonus.total ? "Bonus +" + fmt(data.bonus.total) + (data.bonus.breakdown ? ". " + data.bonus.breakdown : "") : "No bonus.";
-      const minus = data.deductions && data.deductions.total ? " Deductions −" + fmt(data.deductions.total) + (data.deductions.reasons ? ". " + data.deductions.reasons : "") : " No deductions.";
-      note.textContent = plus + minus;
+      const summary = document.createElement("p");
+      summary.className = "quiet";
+      summary.textContent = data.summary || "";
       const two = document.createElement("div");
       two.className = "two";
-      two.append(list("Holds", data.strengths || []), list("Lags", data.gaps || []));
+      two.append(list("Matches the job", data.matched || []), list("Missing", data.missing || []));
       const again = document.createElement("button");
       again.className = "again";
       again.type = "button";
-      again.textContent = "Score another resume";
+      again.textContent = "Score another job";
       again.addEventListener("click", reset);
-      const privacy = document.createElement("p");
-      privacy.className = "quiet";
-      privacy.textContent = "This resume was not stored. It is deleted after scoring.";
-      root.append(head, rows, note, two, again, privacy);
+      root.append(head, summary, two, again);
       yours.appendChild(root);
       yours.hidden = false;
       root.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -185,37 +137,39 @@
     function reset() {
       chosen = null;
       fileInput.value = "";
-      dropTitle.textContent = "Drop a PDF here";
-      dropHint.textContent = "or choose a file · 8 MB max";
-      runBtn.disabled = true;
+      jobInput.value = "";
+      dropTitle.textContent = "Drop the resume PDF in this box";
+      dropHint.textContent = "or click here to choose a file · 8 MB max";
       yours.hidden = true;
       yours.replaceChildren();
       setError("");
+      refresh();
     }
     async function analyze() {
-      if (!chosen || busy) return;
+      if (!chosen || busy || jobInput.value.trim().length < 40) return;
       busy = true;
-      runBtn.disabled = true;
+      refresh();
       setError("");
       yours.hidden = true;
       statusEl.classList.add("show");
       const body = new FormData();
       body.append("resume", chosen);
-      body.append("role", role);
+      body.append("job", jobInput.value.trim());
       try {
-        const response = await fetch("/api/score", { method: "POST", body });
+        const response = await fetch("/api/job", { method: "POST", body });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.error || "Scoring failed.");
         render(data);
       } catch (err) {
         setError(err.message || "Scoring failed.");
-        runBtn.disabled = false;
       } finally {
         busy = false;
         statusEl.classList.remove("show");
+        refresh();
       }
     }
     fileInput.addEventListener("change", () => choose(fileInput.files && fileInput.files[0]));
+    jobInput.addEventListener("input", refresh);
     runBtn.addEventListener("click", analyze);
     ["dragenter", "dragover"].forEach((name) => drop.addEventListener(name, (event) => {
       event.preventDefault();
@@ -229,10 +183,6 @@
       drop.classList.remove("hot");
       choose(event.dataTransfer.files && event.dataTransfer.files[0]);
     });
-    fetch("/api/roles").then((response) => response.json()).then((data) => {
-      const first = (data.roles || [])[0];
-      if (first) role = first.name;
-    }).catch(() => {});
   </script>
 </body>
 </html>

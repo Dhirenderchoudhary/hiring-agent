@@ -189,6 +189,107 @@ def score_upload(data, filename, role_name):
             pass
 
 
+def match_upload(data, filename, job_text):
+    """Score one resume against a pasted job description."""
+    from dotenv import load_dotenv
+
+    from llm_utils import extract_json_from_response, initialize_llm_provider
+    from pdf import PDFHandler
+    from prompt import DEFAULT_MODEL, MODEL_PARAMETERS
+
+    load_dotenv(ROOT / ".env", override=True)
+    job_text = " ".join((job_text or "").split())
+    if len(job_text) < 40:
+        raise ValueError("Paste a job description. A title alone is not enough.")
+    if len(job_text) > 12000:
+        job_text = job_text[:12000]
+    if not data or not data.startswith(b"%PDF"):
+        raise ValueError("Upload a PDF resume.")
+    if filename and not filename.lower().endswith(".pdf"):
+        raise ValueError("Upload a PDF resume.")
+
+    tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False)
+    try:
+        tmp.write(data)
+        tmp.close()
+        with SCORE_LOCK:
+            resume = PDFHandler().extract_json_from_pdf(tmp.name)
+        if resume is None:
+            raise RuntimeError(
+                "Scoring stopped before a report was produced. "
+                "Check the model key in .env, or upload a text-based PDF resume."
+            )
+        dumped = resume.model_dump()
+        basics = dumped.get("basics") or {}
+        basics["email"] = None
+        basics["phone"] = None
+        name = basics.get("name") or "Candidate"
+        profile = json.dumps(dumped, ensure_ascii=False)[:24000]
+        params = MODEL_PARAMETERS.get(DEFAULT_MODEL, {"temperature": 0.1, "top_p": 0.9})
+        provider = initialize_llm_provider(DEFAULT_MODEL)
+        response = provider.chat(
+            model=DEFAULT_MODEL,
+            messages=[
+                {
+                    "role": "system",
+                    "content": (
+                        "Compare a resume to one job description. Reply with JSON only. "
+                        "Score fit from 0 to 100 using only facts in the resume. "
+                        "Do not invent tools, employers, or numbers. "
+                        "Name, college, grades, and city must not change the score. "
+                        "Keys: candidate (string), score (number), summary (one sentence), "
+                        "matched (list of requirements the resume meets), "
+                        "missing (list of requirements it does not show)."
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": f"JOB DESCRIPTION:\n{job_text}\n\nRESUME JSON:\n{profile}",
+                },
+            ],
+            options={
+                "temperature": params.get("temperature", 0.1),
+                "top_p": params.get("top_p", 0.9),
+            },
+            format={"type": "object"},
+        )
+        parsed = json.loads(extract_json_from_response(response["message"]["content"]))
+        score = max(0.0, min(100.0, float(parsed.get("score") or 0)))
+        return {
+            "candidate": parsed.get("candidate") or name,
+            "score": score,
+            "out_of": 100,
+            "summary": str(parsed.get("summary") or ""),
+            "matched": [str(item) for item in (parsed.get("matched") or [])][:8],
+            "missing": [str(item) for item in (parsed.get("missing") or [])][:8],
+        }
+    finally:
+        try:
+            os.remove(tmp.name)
+        except OSError:
+            pass
+
+
+def job_request(body, content_type):
+    if not body or len(body) > MAX_BYTES + 64 * 1024:
+        return 400, {"error": "Upload a PDF under 8 MB."}
+    try:
+        fields, files = parse_multipart(content_type, body)
+        upload = files.get("resume")
+        if not upload:
+            raise ValueError("Choose a PDF resume.")
+        if len(upload["data"]) > MAX_BYTES:
+            raise ValueError("Upload a PDF under 8 MB.")
+        return 200, match_upload(upload["data"], upload["filename"], fields.get("job"))
+    except ValueError as exc:
+        return 400, {"error": str(exc)}
+    except RuntimeError as exc:
+        return 502, {"error": str(exc)}
+    except Exception as exc:
+        traceback.print_exc()
+        return 502, {"error": public_error(exc)}
+
+
 def roles_payload():
     return {
         "roles": [
@@ -258,12 +359,23 @@ class Handler(BaseHTTPRequestHandler):
             "/example": "example.html",
             "/algorithm": "algorithm.html",
             "/faq": "faq.html",
+            "/job": "job.html",
         }
         if path in pages:
             self._send(200, (WEB / pages[path]).read_bytes(), "text/html; charset=utf-8")
             return
-        if path == "/app.css":
-            self._send(200, (WEB / "app.css").read_bytes(), "text/css; charset=utf-8")
+        name = path[1:]
+        file = WEB / name
+        types = {
+            ".css": "text/css; charset=utf-8",
+            ".svg": "image/svg+xml",
+            ".png": "image/png",
+        }
+        if "/" not in name and file.is_file() and file.suffix in types:
+            self._send(200, file.read_bytes(), types[file.suffix])
+            return
+        if path == "/favicon.ico" and (WEB / "favicon.svg").is_file():
+            self._send(200, (WEB / "favicon.svg").read_bytes(), "image/svg+xml")
             return
         if path == "/api/roles":
             self._json(200, roles_payload())
@@ -272,12 +384,16 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = self.path.split("?", 1)[0]
-        if path != "/api/score":
+        if path not in ("/api/score", "/api/job"):
             self._json(404, {"error": "Not found."})
             return
         length = int(self.headers.get("Content-Length", "0") or "0")
         body = self.rfile.read(length) if length else b""
-        status, payload = score_request(body, self.headers.get("Content-Type", ""))
+        content_type = self.headers.get("Content-Type", "")
+        if path == "/api/job":
+            status, payload = job_request(body, content_type)
+        else:
+            status, payload = score_request(body, content_type)
         self._json(status, payload)
 
 

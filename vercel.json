@@ -4,7 +4,8 @@
   "rewrites": [
     { "source": "/example", "destination": "/example.html" },
     { "source": "/algorithm", "destination": "/algorithm.html" },
-    { "source": "/faq", "destination": "/faq.html" }
+    { "source": "/faq", "destination": "/faq.html" },
+    { "source": "/job", "destination": "/job.html" }
   ],
   "functions": {
     "web/server.py": {
