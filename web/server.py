@@ -253,7 +253,12 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = self.path.split("?", 1)[0]
         path = path.rstrip("/") or "/"
-        pages = {"/": "index.html", "/example": "example.html"}
+        pages = {
+            "/": "index.html",
+            "/example": "example.html",
+            "/algorithm": "algorithm.html",
+            "/faq": "faq.html",
+        }
         if path in pages:
             self._send(200, (WEB / pages[path]).read_bytes(), "text/html; charset=utf-8")
             return

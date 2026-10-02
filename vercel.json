@@ -1,7 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "cleanUrls": true,
-  "rewrites": [{ "source": "/example", "destination": "/example.html" }],
+  "rewrites": [
+    { "source": "/example", "destination": "/example.html" },
+    { "source": "/algorithm", "destination": "/algorithm.html" },
+    { "source": "/faq", "destination": "/faq.html" }
+  ],
   "functions": {
     "web/server.py": {
       "maxDuration": 300,

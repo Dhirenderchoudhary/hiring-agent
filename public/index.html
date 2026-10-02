@@ -4,61 +4,55 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Hiring Agent</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23141413'/%3E%3C/svg%3E" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,560;1,9..144,560&family=Outfit:wght@380;480;560&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/app.css" />
 </head>
 <body>
-  <div class="wrap">
-    <nav>
-      <a class="mark" href="/">Hiring Agent</a>
-      <div class="links">
+  <div class="page">
+    <header class="top">
+      <a class="word" href="/">Hiring Agent</a>
+      <nav class="tabs">
         <a href="/" aria-current="page">Score</a>
         <a href="/example">Example</a>
-      </div>
-    </nav>
+        <a href="/algorithm">Algorithm</a>
+        <a href="/faq">FAQ</a>
+      </nav>
+    </header>
 
-    <h1>What does this agent<br><em>think of your resume?</em></h1>
-    <p class="lede">It reads the PDF, checks public GitHub only if a profile is printed on it, then scores the work. Drop a file, then press Run analysis. We do not store your resume. It is deleted after scoring.</p>
+    <p class="built">
+      <svg class="oss" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" />
+      </svg>
+      Built on <a href="https://github.com/interviewstreet/hiring-agent">HackerRank’s open-source hiring agent</a>
+    </p>
+    <h1>Score a resume</h1>
+    <p class="quiet">Drop a PDF, then press Run analysis. The file is not stored. It is deleted after scoring.</p>
 
-    <div class="composer">
-      <label class="drop" id="drop">
+    <div class="drop" id="drop">
+      <label>
         <input id="file" type="file" accept="application/pdf,.pdf" />
-        <div>
-          <strong id="dropTitle">Drop your resume here</strong>
-          <span id="dropHint">PDF only · scoring starts when you press the button</span>
-        </div>
+        <svg class="doc" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
+        <strong id="dropTitle">Drop a PDF here</strong>
+        <span id="dropHint">or choose a file · 8 MB max</span>
       </label>
       <button class="run" id="run" type="button" disabled>Run analysis</button>
     </div>
-    <ul class="weights" id="weights"></ul>
-    <p class="note">Those four add to 100. Bonus can add 20. Deductions come off. Name, college, grades, and city do not count. <a href="/example">See a scored example.</a></p>
+    <ul class="marks">
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="12" r="2"/><path d="M8 6h6a4 4 0 0 1 0 8H8"/></svg><b>35</b> open source</li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16v12H4zM8 7V5h8v2"/></svg><b>30</b> self projects</li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="7" width="18" height="12" rx="1"/><path d="M8 7V6h8v1M3 12h18"/></svg><b>25</b> production</li>
+      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14"/></svg><b>10</b> skills</li>
+    </ul>
+    <p class="scale">Bonus can add 20. Name, college, grades, and city do not count.</p>
 
     <div class="status" id="status" aria-live="polite">
       <div class="barline"><i></i></div>
-      <strong>Scoring this resume</strong>
-      <p>One pass. Usually under two minutes.</p>
+      Scoring this resume. Usually under two minutes.
     </div>
     <div class="error" id="error" role="alert"></div>
-    <div id="yours"></div>
+    <div id="yours" hidden></div>
 
-    <section class="profile" id="how">
-      <p class="index">How a score is made</p>
-      <h2>Four marks, then adjustments</h2>
-      <p class="bio">Open source is other people’s projects, up to 35. Your own repos alone stay at 10 or under. Self projects, up to 30, reward live products and mark down tutorial apps and missing links. Production, up to 25, is shipped work. Technical skills, up to 10, count when they show up in that work.</p>
-      <p class="bio">Bonus covers a portfolio, LinkedIn, a technical blog, Google Summer of Code, GirlScript Summer of Code, and founder or early-startup roles. Deductions cover tutorial-only projects, generic names, and broken or missing links.</p>
-      <details>
-        <summary>What happens to the file?</summary>
-        <p>We do not store your resume. Your resume will be deleted after scoring.</p>
-      </details>
-      <details>
-        <summary>Why might a second run differ?</summary>
-        <p>A model writes the evidence. Read the category bars and the lines under them, not only the total.</p>
-      </details>
-    </section>
-    <footer>Built on the open-source hiring agent.</footer>
+    <footer>Not affiliated with HackerRank. <a href="https://github.com/interviewstreet/hiring-agent">Source</a> · <a href="/example">Example</a> · <a href="/faq">FAQ</a></footer>
   </div>
   <script>
     const fileInput = document.getElementById("file");
@@ -69,9 +63,8 @@
     const statusEl = document.getElementById("status");
     const errorEl = document.getElementById("error");
     const yours = document.getElementById("yours");
-    const weights = document.getElementById("weights");
     let chosen = null;
-    let role = "";
+    let role = "software_engineering_intern";
     let busy = false;
 
     function fmt(n) {
@@ -88,97 +81,102 @@
     function choose(file) {
       if (!file || busy) return;
       if (!isPdf(file)) { setError("Choose a PDF resume."); return; }
+      if (file.size > 8 * 1024 * 1024) { setError("Upload a PDF under 8 MB."); return; }
       chosen = file;
       dropTitle.textContent = file.name;
       dropHint.textContent = "Ready. Press Run analysis.";
       runBtn.disabled = false;
       setError("");
     }
-    function row(label, score, max, evidence) {
-      const wrap = document.createElement("div");
-      wrap.className = "row";
-      const top = document.createElement("div");
-      top.className = "row-top";
-      const name = document.createElement("span");
-      name.textContent = label;
-      const points = document.createElement("span");
-      points.textContent = fmt(score) + " / " + max;
-      top.append(name, points);
-      const track = document.createElement("div");
-      track.className = "track";
-      const fill = document.createElement("div");
-      fill.className = "fill";
-      fill.style.width = (max ? Math.max(0, Math.min(100, (score / max) * 100)) : 0) + "%";
-      track.appendChild(fill);
-      wrap.append(top, track);
-      if (evidence) {
-        const line = document.createElement("p");
-        line.className = "evidence";
-        line.textContent = evidence;
-        wrap.appendChild(line);
-      }
-      return wrap;
+    function tone(key) {
+      if (key === "self_projects") return "proj";
+      if (key === "production") return "prod";
+      if (key === "technical_skills") return "skill";
+      return "os";
     }
-    function bullets(title, items) {
+    function row(category) {
+      const line = document.createElement("div");
+      line.className = "row";
+      const name = document.createElement("span");
+      name.textContent = category.label;
+      const track = document.createElement("div");
+      track.className = "track " + tone(category.key);
+      const fill = document.createElement("i");
+      const max = Number(category.max) || 0;
+      fill.style.width = (max ? Math.max(0, Math.min(100, (category.score / max) * 100)) : 0) + "%";
+      track.appendChild(fill);
+      const pts = document.createElement("span");
+      pts.className = "n";
+      pts.textContent = fmt(category.score) + " / " + category.max;
+      line.append(name, track, pts);
+      if (category.evidence) {
+        const evidence = document.createElement("p");
+        evidence.className = "evidence";
+        evidence.textContent = category.evidence;
+        line.appendChild(evidence);
+      }
+      return line;
+    }
+    function list(title, items) {
       const block = document.createElement("div");
       const heading = document.createElement("h3");
       heading.textContent = title;
-      const list = document.createElement("ul");
+      const ul = document.createElement("ul");
       for (const text of (items.length ? items : ["Nothing called out."])) {
-        const item = document.createElement("li");
-        item.textContent = text;
-        list.appendChild(item);
+        const li = document.createElement("li");
+        li.textContent = text;
+        ul.appendChild(li);
       }
-      block.append(heading, list);
+      block.append(heading, ul);
       return block;
     }
     function render(data) {
       yours.replaceChildren();
-      const article = document.createElement("article");
-      article.className = "profile";
-      const index = document.createElement("p");
-      index.className = "index";
-      index.textContent = "Your result";
+      const root = document.createElement("article");
+      root.className = "result";
+      const head = document.createElement("div");
+      head.className = "head";
       const name = document.createElement("h2");
       name.textContent = data.candidate || "Candidate";
-      const score = document.createElement("p");
-      score.className = "score";
-      score.textContent = fmt(data.score) + " out of " + data.out_of;
-      const bonus = document.createElement("p");
-      bonus.className = "bonus";
-      const plus = data.bonus && data.bonus.total ? "Bonus +" + fmt(data.bonus.total) + ". " + (data.bonus.breakdown || "") : "No bonus.";
-      const minus = data.deductions && data.deductions.total ? " Deductions −" + fmt(data.deductions.total) + ". " + (data.deductions.reasons || "") : " No deductions.";
-      bonus.textContent = plus + minus;
-      const privacy = document.createElement("p");
-      privacy.className = "meta";
-      privacy.textContent = "We do not store your resume. Your resume will be deleted after scoring.";
-      const heading = document.createElement("h3");
-      heading.textContent = "Score breakdown";
-      article.append(index, name, score, privacy, heading);
-      for (const category of data.categories || []) {
-        article.appendChild(row(category.label, category.score, category.max, category.evidence));
-      }
-      article.appendChild(bonus);
+      const total = document.createElement("p");
+      total.className = "total";
+      const big = document.createElement("b");
+      big.textContent = fmt(data.score);
+      const small = document.createElement("span");
+      small.textContent = " / " + data.out_of;
+      total.append(big, small);
+      head.append(name, total);
+      const rows = document.createElement("div");
+      rows.className = "rows";
+      for (const category of data.categories || []) rows.appendChild(row(category));
+      const note = document.createElement("p");
+      note.className = "note";
+      const plus = data.bonus && data.bonus.total ? "Bonus +" + fmt(data.bonus.total) + (data.bonus.breakdown ? ". " + data.bonus.breakdown : "") : "No bonus.";
+      const minus = data.deductions && data.deductions.total ? " Deductions −" + fmt(data.deductions.total) + (data.deductions.reasons ? ". " + data.deductions.reasons : "") : " No deductions.";
+      note.textContent = plus + minus;
       const two = document.createElement("div");
       two.className = "two";
-      two.append(bullets("Where it holds", data.strengths || []), bullets("Where it lags", data.gaps || []));
+      two.append(list("Holds", data.strengths || []), list("Lags", data.gaps || []));
       const again = document.createElement("button");
       again.className = "again";
       again.type = "button";
       again.textContent = "Score another resume";
       again.addEventListener("click", reset);
-      article.append(two, again);
-      yours.appendChild(article);
-      yours.classList.add("show");
-      yours.scrollIntoView({ behavior: "smooth", block: "start" });
+      const privacy = document.createElement("p");
+      privacy.className = "quiet";
+      privacy.textContent = "This resume was not stored. It is deleted after scoring.";
+      root.append(head, rows, note, two, again, privacy);
+      yours.appendChild(root);
+      yours.hidden = false;
+      root.scrollIntoView({ behavior: "smooth", block: "start" });
     }
     function reset() {
       chosen = null;
       fileInput.value = "";
-      dropTitle.textContent = "Drop your resume here";
-      dropHint.textContent = "PDF only · scoring starts when you press the button";
+      dropTitle.textContent = "Drop a PDF here";
+      dropHint.textContent = "or choose a file · 8 MB max";
       runBtn.disabled = true;
-      yours.classList.remove("show");
+      yours.hidden = true;
       yours.replaceChildren();
       setError("");
     }
@@ -187,7 +185,7 @@
       busy = true;
       runBtn.disabled = true;
       setError("");
-      yours.classList.remove("show");
+      yours.hidden = true;
       statusEl.classList.add("show");
       const body = new FormData();
       body.append("resume", chosen);
@@ -211,7 +209,9 @@
       event.preventDefault();
       drop.classList.add("hot");
     }));
-    drop.addEventListener("dragleave", () => drop.classList.remove("hot"));
+    drop.addEventListener("dragleave", (event) => {
+      if (!drop.contains(event.relatedTarget)) drop.classList.remove("hot");
+    });
     drop.addEventListener("drop", (event) => {
       event.preventDefault();
       drop.classList.remove("hot");
@@ -219,18 +219,7 @@
     });
     fetch("/api/roles").then((response) => response.json()).then((data) => {
       const first = (data.roles || [])[0];
-      if (!first) return;
-      role = first.name;
-      weights.replaceChildren();
-      for (const category of first.categories) {
-        const item = document.createElement("li");
-        const points = document.createElement("b");
-        points.textContent = category.max;
-        const label = document.createElement("span");
-        label.textContent = category.label;
-        item.append(points, label);
-        weights.appendChild(item);
-      }
+      if (first) role = first.name;
     }).catch(() => {});
   </script>
 </body>

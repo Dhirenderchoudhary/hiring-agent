@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FAQ · Hiring Agent</title>
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="top">
+      <a class="word" href="/">Hiring Agent</a>
+      <nav class="tabs">
+        <a href="/">Score</a>
+        <a href="/example">Example</a>
+        <a href="/algorithm">Algorithm</a>
+        <a href="/faq" aria-current="page">FAQ</a>
+      </nav>
+    </header>
+
+    <h1>Questions</h1>
+    <p class="quiet">Short answers. The rubric itself is on <a href="/algorithm">Algorithm</a>.</p>
+
+    <div class="faq">
+      <details open>
+        <summary>What is this?</summary>
+        <p>A page on top of <a href="https://github.com/interviewstreet/hiring-agent">HackerRank’s open-source hiring agent</a>. You upload a PDF. It reads the text, checks a public GitHub profile only if one is printed on the resume, and returns a score.</p>
+      </details>
+      <details>
+        <summary>Is this official HackerRank?</summary>
+        <p>No. It runs their open-source agent. HackerRank does not operate this page and is not affiliated with it.</p>
+      </details>
+      <details>
+        <summary>Do you keep the resume?</summary>
+        <p>No. There is no account. The PDF is deleted after scoring.</p>
+      </details>
+      <details>
+        <summary>Why doesn’t it start on drop?</summary>
+        <p>Scoring calls a model and can take a minute or two. It waits until you press Run analysis.</p>
+      </details>
+      <details>
+        <summary>What do the four numbers mean?</summary>
+        <p>Open source is 35, self projects 30, production 25, technical skills 10. Those add to 100. Bonus can add up to 20. Deductions come off.</p>
+      </details>
+      <details>
+        <summary>Does my college or GPA count?</summary>
+        <p>No. Name, college, grades, and city do not move the score.</p>
+      </details>
+      <details>
+        <summary>What if the resume has no GitHub link?</summary>
+        <p>The agent still scores the PDF. It only reads GitHub when a profile is on the page, and only the public profile.</p>
+      </details>
+      <details>
+        <summary>Why might a second run differ?</summary>
+        <p>A model writes the evidence. A point can move. Read the bars and the lines under them, not only the total.</p>
+      </details>
+      <details>
+        <summary>Where can I see a finished score?</summary>
+        <p><a href="/example">Dhirender Choudhary, 97 / 100</a>, with the four bars, bonus, strengths, and gaps.</p>
+      </details>
+    </div>
+
+    <footer><a href="/">Score a resume</a> · <a href="https://github.com/interviewstreet/hiring-agent">Source</a></footer>
+  </div>
+</body>
+</html>
