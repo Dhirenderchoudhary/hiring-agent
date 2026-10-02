@@ -13,6 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 os.chdir(ROOT)
 
+# providers.json defaults to a local Ollama model. On Vercel, use OpenAI
+# unless DEFAULT_MODEL is already set in the project env.
+if os.environ.get("VERCEL") and not os.environ.get("DEFAULT_MODEL"):
+    os.environ["DEFAULT_MODEL"] = "gpt-4.1"
+
 import github as github_mod
 import score as score_mod
 from roles import list_available_roles, load_role
@@ -20,9 +25,10 @@ from roles import list_available_roles, load_role
 # Don't store uploaded resumes or evaluation rows. Do reuse public GitHub cache
 # so a repeat score doesn't burn the unauthenticated rate limit and stall.
 score_mod.DEVELOPMENT_MODE = False
-github_mod.DEVELOPMENT_MODE = True
+# Vercel can only write to /tmp, so skip the GitHub file cache there.
+github_mod.DEVELOPMENT_MODE = not os.environ.get("VERCEL")
 
-WEB = Path(__file__).resolve().parent
+WEB = ROOT / "public"
 MAX_BYTES = 8 * 1024 * 1024
 SCORE_LOCK = threading.Lock()
 ROLES = {name: load_role(name) for name in list_available_roles()}
@@ -183,6 +189,49 @@ def score_upload(data, filename, role_name):
             pass
 
 
+def roles_payload():
+    return {
+        "roles": [
+            {
+                "name": role.name,
+                "position": role.position_title,
+                "bonus_max": role.bonus_max,
+                "categories": [
+                    {
+                        "key": category.key,
+                        "label": category.label,
+                        "max": category.max,
+                    }
+                    for category in role.categories
+                ],
+            }
+            for role in ROLES.values()
+        ]
+    }
+
+
+def score_request(body, content_type):
+    """Score one upload. Returns an HTTP status and a JSON-ready dict."""
+    if not body or len(body) > MAX_BYTES + 64 * 1024:
+        return 400, {"error": "Upload a PDF under 8 MB."}
+    try:
+        fields, files = parse_multipart(content_type, body)
+        upload = files.get("resume")
+        if not upload:
+            raise ValueError("Choose a PDF resume.")
+        if len(upload["data"]) > MAX_BYTES:
+            raise ValueError("Upload a PDF under 8 MB.")
+        role_name = fields.get("role") or next(iter(ROLES))
+        return 200, score_upload(upload["data"], upload["filename"], role_name)
+    except ValueError as exc:
+        return 400, {"error": str(exc)}
+    except RuntimeError as exc:
+        return 502, {"error": str(exc)}
+    except Exception as exc:
+        traceback.print_exc()
+        return 502, {"error": public_error(exc)}
+
+
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
@@ -212,27 +261,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, (WEB / "app.css").read_bytes(), "text/css; charset=utf-8")
             return
         if path == "/api/roles":
-            self._json(
-                200,
-                    {
-                        "roles": [
-                            {
-                                "name": role.name,
-                                "position": role.position_title,
-                                "bonus_max": role.bonus_max,
-                                "categories": [
-                                    {
-                                        "key": category.key,
-                                        "label": category.label,
-                                        "max": category.max,
-                                    }
-                                    for category in role.categories
-                                ],
-                            }
-                            for role in ROLES.values()
-                        ]
-                    },
-            )
+            self._json(200, roles_payload())
             return
         self._json(404, {"error": "Not found."})
 
@@ -242,30 +271,9 @@ class Handler(BaseHTTPRequestHandler):
             self._json(404, {"error": "Not found."})
             return
         length = int(self.headers.get("Content-Length", "0") or "0")
-        if length <= 0 or length > MAX_BYTES + 64 * 1024:
-            self._json(400, {"error": "Upload a PDF under 8 MB."})
-            return
-        body = self.rfile.read(length)
-        try:
-            fields, files = parse_multipart(self.headers.get("Content-Type", ""), body)
-            upload = files.get("resume")
-            if not upload:
-                raise ValueError("Choose a PDF resume.")
-            if len(upload["data"]) > MAX_BYTES:
-                raise ValueError("Upload a PDF under 8 MB.")
-            role_name = fields.get("role") or next(iter(ROLES))
-            result = score_upload(upload["data"], upload["filename"], role_name)
-        except ValueError as exc:
-            self._json(400, {"error": str(exc)})
-            return
-        except RuntimeError as exc:
-            self._json(502, {"error": str(exc)})
-            return
-        except Exception as exc:
-            traceback.print_exc()
-            self._json(502, {"error": public_error(exc)})
-            return
-        self._json(200, result)
+        body = self.rfile.read(length) if length else b""
+        status, payload = score_request(body, self.headers.get("Content-Type", ""))
+        self._json(status, payload)
 
 
 def main():

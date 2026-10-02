@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "cleanUrls": true,
+  "rewrites": [{ "source": "/example", "destination": "/example.html" }],
+  "functions": {
+    "api/score.py": {
+      "maxDuration": 300,
+      "excludeFiles": "{.venv/**,cache/**,docs/**,public/**,greenhouse_resumes/**}"
+    }
+  }
+}
