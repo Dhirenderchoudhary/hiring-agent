@@ -276,6 +276,9 @@ class Handler(BaseHTTPRequestHandler):
         self._json(status, payload)
 
 
+handler = Handler
+
+
 def main():
     if not ROLES:
         sys.exit("No roles found under roles/.")
