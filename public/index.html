@@ -35,10 +35,15 @@
         <circle cx="12" cy="12" r="3" />
         <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" />
       </svg>
-      Built on <a href="https://github.com/interviewstreet/hiring-agent">HackerRank’s open-source hiring agent</a>
+      Built on <img class="hr" src="/favicon.svg?v=3" alt="" width="16" height="16" /> <a href="https://github.com/interviewstreet/hiring-agent">HackerRank’s open-source hiring agent</a>
     </p>
     <h1>Score a resume</h1>
-    <p class="quiet">Drop a PDF, then press Run analysis. The file is not stored. It is deleted after scoring.</p>
+    <p class="quiet">Pick a role, drop a PDF, then press Run analysis. The file is not stored. It is deleted after scoring.</p>
+    <div class="pick" id="pick" role="group" aria-label="Role">
+      <button type="button" data-role="software_engineering_intern" aria-pressed="true">Intern</button>
+      <button type="button" data-role="software_development_engineer" aria-pressed="false">SDE</button>
+      <button type="button" data-role="software_engineer" aria-pressed="false">SWE</button>
+    </div>
 
     <div class="drop" id="drop">
       <label>
@@ -50,13 +55,13 @@
       <button class="run" id="run" type="button" disabled>Run analysis</button>
     </div>
     <a class="alt" href="/job">Match a job description</a>
-    <ul class="marks">
-      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="12" r="2"/><path d="M8 6h6a4 4 0 0 1 0 8H8"/></svg><b>35</b> open source</li>
-      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16v12H4zM8 7V5h8v2"/></svg><b>30</b> self projects</li>
-      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="7" width="18" height="12" rx="1"/><path d="M8 7V6h8v1M3 12h18"/></svg><b>25</b> production</li>
-      <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14"/></svg><b>10</b> skills</li>
+    <ul class="marks" id="marks">
+      <li data-key="open_source"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="6" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="12" r="2"/><path d="M8 6h6a4 4 0 0 1 0 8H8"/></svg><b>35</b> open source</li>
+      <li data-key="self_projects"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 7h16v12H4zM8 7V5h8v2"/></svg><b>30</b> self projects</li>
+      <li data-key="production"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="7" width="18" height="12" rx="1"/><path d="M8 7V6h8v1M3 12h18"/></svg><b>25</b> production</li>
+      <li data-key="technical_skills"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M13 5l-2 14"/></svg><b>10</b> skills</li>
     </ul>
-    <p class="scale">Bonus can add 20. Name, college, grades, and city do not count.</p>
+    <p class="scale" id="scale">Bonus can add 20. Public work weighs more. Name, college, grades, and city do not count.</p>
 
     <div class="status" id="status" aria-live="polite">
       <div class="barline"><i></i></div>
@@ -76,9 +81,17 @@
     const statusEl = document.getElementById("status");
     const errorEl = document.getElementById("error");
     const yours = document.getElementById("yours");
+    const pick = document.getElementById("pick");
+    const marks = document.getElementById("marks");
+    const scale = document.getElementById("scale");
     let chosen = null;
     let role = "software_engineering_intern";
     let busy = false;
+    const rubrics = {
+      software_engineering_intern: { open_source: 35, self_projects: 30, production: 25, technical_skills: 10, note: "Bonus can add 20. Public work weighs more. Name, college, grades, and city do not count.", label: "Intern rubric" },
+      software_development_engineer: { open_source: 15, self_projects: 30, production: 30, technical_skills: 25, note: "Bonus can add 20. Features you shipped weigh more. Name, college, grades, and city do not count.", label: "SDE rubric" },
+      software_engineer: { open_source: 20, self_projects: 15, production: 35, technical_skills: 30, note: "Bonus can add 20. Systems you owned weigh more. Name, college, grades, and city do not count.", label: "SWE rubric" }
+    };
 
     function fmt(n) {
       const value = Number(n);
@@ -151,6 +164,12 @@
       head.className = "head";
       const name = document.createElement("h2");
       name.textContent = data.candidate || "Candidate";
+      const which = document.createElement("p");
+      which.className = "quiet";
+      which.style.margin = "2px 0 0";
+      which.textContent = (rubrics[role] && rubrics[role].label) || "Rubric";
+      const who = document.createElement("div");
+      who.append(name, which);
       const total = document.createElement("p");
       total.className = "total";
       const big = document.createElement("b");
@@ -158,7 +177,7 @@
       const small = document.createElement("span");
       small.textContent = " / " + data.out_of;
       total.append(big, small);
-      head.append(name, total);
+      head.append(who, total);
       const rows = document.createElement("div");
       rows.className = "rows";
       for (const category of data.categories || []) rows.appendChild(row(category));
@@ -230,10 +249,27 @@
       drop.classList.remove("hot");
       choose(event.dataTransfer.files && event.dataTransfer.files[0]);
     });
-    fetch("/api/roles").then((response) => response.json()).then((data) => {
-      const first = (data.roles || [])[0];
-      if (first) role = first.name;
-    }).catch(() => {});
+    function selectRole(name) {
+      if (!rubrics[name] || name === role || busy) return;
+      role = name;
+      const rubric = rubrics[name];
+      for (const button of pick.querySelectorAll("button")) {
+        button.setAttribute("aria-pressed", button.dataset.role === name ? "true" : "false");
+      }
+      for (const cell of marks.querySelectorAll("[data-key]")) {
+        const value = rubric[cell.dataset.key];
+        const strong = cell.querySelector("b");
+        if (strong && value != null) strong.textContent = value;
+      }
+      scale.textContent = rubric.note;
+      yours.hidden = true;
+      yours.replaceChildren();
+      setError("");
+    }
+    pick.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (button) selectRole(button.dataset.role);
+    });
   </script>
 </body>
 </html>

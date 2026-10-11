@@ -1,0 +1,12 @@
+{
+  "position_title": "Software Engineer",
+  "categories": [
+    {"key": "open_source", "label": "Open Source", "max": 20, "icon": "🌐"},
+    {"key": "self_projects", "label": "Self Projects", "max": 15, "icon": "🚀"},
+    {"key": "production", "label": "Production Experience", "max": 35, "icon": "🏢"},
+    {"key": "technical_skills", "label": "Technical Skills", "max": 30, "icon": "💻"}
+  ],
+  "bonus_max": 20,
+  "min_final_score": -20,
+  "max_final_score": 120
+}
