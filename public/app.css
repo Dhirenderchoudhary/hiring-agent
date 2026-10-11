@@ -24,24 +24,13 @@ button, input { font: inherit; }
 
 .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 36px; }
 .top a { text-decoration: none; }
-.word { font-weight: 600; white-space: nowrap; }
-.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
-.tabs a { color: var(--muted); padding: 5px 10px; border-radius: 6px; border: 1px solid transparent; white-space: nowrap; }
+.word { font-weight: 600; }
+.tabs { display: flex; gap: 6px; }
+.tabs a { color: var(--muted); padding: 5px 10px; border-radius: 6px; border: 1px solid transparent; }
 .tabs a[aria-current="page"] { color: var(--ink); background: #fff; border-color: #111; }
 
 h1 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
 .quiet { margin: 0 0 16px; color: var(--muted); }
-.pick { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 16px; }
-.pick button {
-  height: 32px;
-  padding: 0 14px;
-  border: 1px solid var(--line);
-  border-radius: 6px;
-  background: #fff;
-  color: var(--muted);
-  cursor: pointer;
-}
-.pick button[aria-pressed="true"] { color: var(--ink); border-color: #111; font-weight: 600; }
 
 .step { margin: 0 0 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
 .drop {
@@ -161,8 +150,7 @@ a.alt {
 footer { margin-top: 36px; color: var(--muted); font-size: 12px; }
 footer a { color: var(--os); }
 
-.built { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 14px; color: var(--muted); font-size: 13px; }
-.hr { width: 16px; height: 16px; flex: none; border-radius: 4px; }
+.built { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; color: var(--muted); font-size: 13px; }
 .built a, .faq a { color: var(--os); }
 .oss { flex: none; color: var(--os); }
 .oss { animation: spin 16s linear infinite; transform-origin: center; }
@@ -204,11 +192,6 @@ footer a { color: var(--os); }
 }
 
 @media (max-width: 640px) {
-  .page { width: min(720px, calc(100% - 32px)); padding-top: 20px; }
-  .top { flex-direction: column; align-items: flex-start; gap: 10px; margin-bottom: 28px; }
-  .tabs a { padding: 6px 10px; }
-  .head { flex-wrap: wrap; }
-  .built { align-items: flex-start; }
   .row { grid-template-columns: 1fr auto; }
   .track { grid-column: 1 / -1; }
   .two, .marks { grid-template-columns: 1fr 1fr; }
